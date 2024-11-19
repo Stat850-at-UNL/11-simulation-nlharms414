@@ -17,6 +17,8 @@ Make sure this document compiles before you submit your answers.
 ## `roll_dice`
 
 ```{r}
+library(dplyr)
+
 roll_dice <- function() {
   # Input: None
   # Output: an integer from 1:12
@@ -30,16 +32,97 @@ roll_dice <- function() {
 roll_dice()
 ```
 
+```{r}
+appendVectors <- function(roll,outcome,df) { 
+# Input: Die roll and outcome 
+# Output: appended vectors.
+# Description: appends id, roll, and outcome vectors with information for the most recent roll.
+  
+  newRow <- data.frame(nrow(df)+1,roll,outcome)
+  names(newRow) <- c("id","roll","outcome")
+  df <- rbind(df,newRow)
+  
+  return(df)
+}
 
+# test function
+df <- data.frame()
+df <- appendVectors(5,"Continue",df)
+```
+
+```{r}
+comeOut <- function(roll,df){
+# Input: Die roll 
+# Output: win/loss message
+# Description: if the come out roll was a 7 or 11, the code displays a win message and returns a data frame. if the come out roll was a 2, 3 or 12, the function displays a lose message and returns a data frame. note in both cases, info from the roll is appended to the respective vectors (id,roll,outcome), which then are combined into the data frame that is returned in both cases.  
+  
+  if (roll %in% c(7,11)) {
+    df <-appendVectors(roll,"Win",df)
+    return(df)
+  } else {
+    df <-appendVectors(roll,"Lose",df)
+    return(df)
+  }
+}
+
+# test function
+df <- data.frame()
+comeOut(7,df)
+```
+
+```{r}
+pointRoll <- function(roll,df){
+# Input: Die roll 
+# Output: win/loss message
+# Description: code sets the point roll as equal to the die roll. info from the first roll is appended to the respective vectors (id, roll, outcome). the code uses the roll_die() function to roll again. if a 7 is rolled, info is appended to the vectors, a lose message is displayed, and the vectors are appended into a data frame that is also returned. the point is rolled, roll info is appended to the vectors, a win message is displayed, and the vectors are appended into a data frame that gets returned.this function is repeated until either a 7 or point is rolled.
+    
+  
+  # set point 
+  point <- roll
+  
+  # roll until either a 7 or the point is rolled
+  repeat {
+    df <- appendVectors(roll,"Continue",df)
+    roll <- roll_dice()
+    
+    # check if new roll is a seven or the point is roll
+    if (roll == 7) {
+      df <- appendVectors(roll,"Lose",df)
+      return(df)
+    } else if(roll == point){
+      df <- appendVectors(roll,"Win",df)
+      return(df)
+    }
+  }
+}
+
+# test function
+df <- data.frame()
+pointRoll(8,df)
+```
 
 # Main Functions
 
-## `simulate_craps_game`
+## simulate_craps_game 
 ```{r}
 simulate_craps_game <- function() {
   # Input: 
   # Output: 
   # Description:
+  
+  # set up empty data frame
+  df <- data.frame()
+  
+  # come out roll
+  first_roll <- roll_dice()
+  
+  # evaluate first_roll
+  if (first_roll %in% c(2,3,7,11,12)) {
+    comeOut(first_roll,df)
+  } else {
+    pointRoll(first_roll,df)
+  }
+  
 }
 ```
 
@@ -49,10 +132,19 @@ simulate_craps_game()
 
 ## `summarize_craps_game`
 ```{r}
-summarize_craps_game <- function() {
-  # Input: 
-  # Output: 
-  # Description:
+summarize_craps_game <- function(df) {
+  # Input: data frame from a simulated craps game
+  # Output: a single row of data summarizing the game
+  # Description: this function takes in the data frame from a single game of craps and summarizes it. the summary includes the number of rolls in the game, whether the game was won or lost, and the point, if applicable
+
+  if (nrow(df) == 1) {
+    df <- data.frame(nrow(df),df[nrow(df),3],"NA")
+    names(df) <- c("number_of_rolls","game_outcome","point") 
+  } else{
+    df <- data.frame(nrow(df),df[nrow(df),3],df[1,2])
+    names(df) <- c("number_of_rolls","game_outcome","point") 
+  }
+  return(df)
 }
 ```
 
@@ -64,13 +156,29 @@ simulate_craps_game() %>% summarize_craps_game()
 ```{r}
 run_craps_simulation <- function(N) {
   # Input: an integer N which determines the number of games to simulate
-  # Output: 
+  # Output: a dataframe containing the outcomes of the simulated games
   # Description:
+  
+  # set up empty data frame to be returned
+  df <- data.frame()
+  
+  # append rows to the data frame until the data frame equals N
+  repeat{
+    summaryGame <- summarize_craps_game(simulate_craps_game())
+    df <- rbind(df,summaryGame)
+    
+    if (nrow(df) == N) {
+      return(df)
+    }
+  }
+  
 }
 ```
 
 ```{r}
-result <- run_craps_simulation(N=5) # demonstrate result
+result <- run_craps_simulation(N=1000) # demonstrate result
 result
 ```
+
+
 
