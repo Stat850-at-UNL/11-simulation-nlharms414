@@ -305,7 +305,7 @@ repeat{
   if (first_roll %in% c(2,3,7,11,12)) {
     comeOut(first_roll)
   } else {
-      pointRoll()
+      pointRoll(first_roll)
   }
 }
  
