@@ -1,6 +1,6 @@
 ---
 title: "Pseudocode: Craps Simulation"
-author: "Nicole Harms"
+author: "Nicole Harms; Xeng Yeng; Dhanushka Sanjeewa"
 editor: 
   markdown: 
     wrap: sentence
